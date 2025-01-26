@@ -8,5 +8,5 @@ def create_app():
     app.register_blueprint(main)
     
     #Upload PDF Size
-    app.config['MAX_SIZE']=12*1024*1024 #up to 12 MB only
+    #app.config['MAX_SIZE']=12*1024*1024 #up to 12 MB only
     return app
