@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, render_template, current_app
 import os
 from werkzeug.utils import secure_filename
 import logging
+from services.pdf_image_extractor import extract_images_from_pdf
 
 main = Blueprint('main', __name__)
 
@@ -34,7 +35,7 @@ def upload_pdf():
             return jsonify({'error': 'Only PDF files are allowed'}), 400
 
         # Check for file size
-        max_size = current_app.config.get('MAX_CONTENT_LENGTH', 12 * 1024 * 1024)  # Default to 12 MB
+        #max_size = current_app.config.get('MAX_CONTENT_LENGTH', 12 * 1024 * 1024)  # Default to 12 MB
 
         # if request.content_length is None:
         #     logging.error("Content length is missing. Unable to determine file size.")
@@ -55,6 +56,25 @@ def upload_pdf():
 
         logging.info(f"File '{filename}' uploaded successfully.")
         return jsonify({'message': f"PDF '{filename}' uploaded successfully"}), 200
+
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
+        return jsonify({'error': str(e)}), 500
+    
+@main.route('/process-pdf', methods=['POST'])
+def process_pdf_endpoint():
+    try:
+        logging.info("Received a request to process the uploaded PDF file.")
+
+        # Get the uploaded PDF filename
+        pdf_filename = request.form.get('pdf_filename')
+        logging.info(f"PDF filename: {pdf_filename}")
+
+        # Extract images from the PDF
+        extract_images_from_pdf(pdf_filename)
+
+        logging.info("PDF processing complete.")
+        return jsonify({'message': 'PDF processing complete'}), 200
 
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")

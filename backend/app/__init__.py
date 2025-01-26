@@ -11,5 +11,5 @@ def create_app():
     app.register_blueprint(main)
 
     #Upload PDF size
-    app.config['MAX_SIZE'] = int(os.getenv('MAX_SIZE', 12*1024*1024)) #made a size.env for this
+    #app.config['MAX_SIZE'] = int(os.getenv('MAX_SIZE', 12*1024*1024)) #made a size.env for this
     return app

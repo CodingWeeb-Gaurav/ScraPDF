@@ -1,3 +1,7 @@
+This repository is for reference purposes only. The code may not be copied, modified, or used in any form without explicit written permission from the owner.
+
+
+file size checking me issues aa rahe hai to routes.py me usko comment out kar diya hu.
 structure-
 ScraPDF/
 ├── app/

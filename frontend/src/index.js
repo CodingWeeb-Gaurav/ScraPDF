@@ -4,6 +4,13 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// Add polyfills for buffer and process
+import { Buffer } from 'buffer';
+import process from 'process';
+
+window.Buffer = Buffer; // Attach Buffer to the global window object
+window.process = process; // Attach process to the global window object
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

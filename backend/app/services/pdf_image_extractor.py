@@ -1,4 +1,5 @@
 #ye first page ke aage se diagram extraction start karega, supposing first page introduction hai
+print("code execution starts")
 import cv2
 import numpy as np
 import os
@@ -6,7 +7,7 @@ from pdf2image import convert_from_path
 from fpdf import FPDF
 import pytesseract
 import shutil
-
+print("code execution starts")
 # Preprocessing function
 def preprocess(img):
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -176,11 +177,11 @@ def extract_images_from_pdf(pdf_filename):
     uploads_dir = os.path.join(base_dir, '..', '..', 'uploads')  # Go two levels up from backend to access uploads
     pdf_path = os.path.join(uploads_dir, pdf_filename)  # The uploaded PDF file path
 
-    output_clean_folder = os.path.join(base_dir, 'cleaned_pages')
-    output_diagram_folder = os.path.join(base_dir, 'extracted_diagrams')
-    output_folder_50dpi = os.path.join(base_dir, 'extracted_pages_50dpi')
-    output_folder_300dpi = os.path.join(base_dir, 'extracted_pages_300dpi')
-    output_clean_pdf = os.path.join(base_dir, 'cleaned_pages.pdf')
+    output_clean_folder = os.makedirs(os.path.join(base_dir, 'cleaned_pages'), exist_ok=True)
+    output_diagram_folder = os.makedirs(os.path.join(base_dir, 'extracted_diagrams'), exist_ok=True)
+    output_folder_50dpi = os.makedirs(os.path.join(base_dir, 'extracted_pages_50dpi'), exist_ok=True)
+    output_folder_300dpi = os.makedirs(os.path.join(base_dir, 'extracted_pages_300dpi'), exist_ok=True)
+    #output_clean_pdf = os.path.join(base_dir, 'cleaned_pages.pdf')
 
     # Clear existing folders
     clear_folders(output_folder_50dpi, output_folder_300dpi, output_diagram_folder, output_clean_folder)
@@ -210,5 +211,6 @@ def extract_images_from_pdf(pdf_filename):
         formatted_page_number = f"{page_number:03}"
         processed_output_path = os.path.join(output_clean_folder, f'page_{formatted_page_number}.png')
         process_image(img_300dpi, rois_300dpi, page_number, processed_output_path)
-
-    print(f"All images processed, diagrams saved, and PDF saved as: {output_clean_pdf}")
+    print("All images processed, and diagrams saved")    
+    #print(f"All images processed, diagrams saved, and PDF saved as: {output_clean_pdf}")
+print("hello world")
