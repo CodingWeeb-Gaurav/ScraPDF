@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScraPDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .message {
+            margin-top: 20px;
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello User, here you can upload the PDF</h1>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="pdf" id="pdf" accept=".pdf" required />
+        <button type="submit">Upload</button>
+    </form>
+
+    <div class="message" id="message"></div>
+    <div class="error" id="error"></div>
+
+    <script>
+        document.getElementById('uploadForm').onsubmit = function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const formData = new FormData(this);
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('error').innerText = data.error;
+                    document.getElementById('message').innerText = '';
+                } else {
+                    document.getElementById('message').innerText = data.message;
+                    document.getElementById('error').innerText = '';
+                }
+            })
+            .catch(error => {
+                document.getElementById('error').innerText = 'An error occurred during the upload.';
+                console.error('Error:', error);
+            });
+        };
+    </script>
+</body>
+</html>
