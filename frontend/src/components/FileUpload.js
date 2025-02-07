@@ -60,8 +60,11 @@ const FileUpload = () => {
         }
     };
 
-    const handleProcess = async () =>{
-        if(!file){setMessage("Please select a file to process."); return;}
+    const handleProcess = async () => {
+        if (!file) {
+            setMessage("Please select a file to process.");
+            return;
+        }
         const apiUrl = process.env.REACT_APP_API_URL;
         if (!apiUrl) {
             setMessage("API URL is not configured.");
@@ -69,20 +72,22 @@ const FileUpload = () => {
         }
         setProcessing(true);
         setMessage("Processing...");
-        try{
-            const res = await axios.post(`${apiUrl}/process`, {filename: file.name});
+        try {
+            const res = await axios.post(`${apiUrl}/process-pdf`, {
+                pdf_filename: file.name, // Pass the file name to the backend
+            });
             setMessage(res.data.message || "Processing successful!");
-        }
-        catch(err){
+        } catch (err) {
             if (err.response) {
-                setMessage(err.response.data.msg || "An error occurred while processing.");
+                setMessage(err.response.data.error || "An error occurred while processing.");
             } else {
                 setMessage("Network error or server is unreachable.");
             }
         } finally {
             setProcessing(false);
         }
-    }
+    };
+    
 
     return (
         <div style={{ padding: "20px" }}>
@@ -113,7 +118,7 @@ const FileUpload = () => {
                 {processing ? 'Processing...' : 'Process'}
             </button>
             {message && (
-                <div style={{ marginTop: "10px", color: loading ? "blue" : "red" }}>
+                <div style={{ marginTop: "10px", color: loading ? "blue" : "green" }}>
                     {message}
                 </div>
             )}

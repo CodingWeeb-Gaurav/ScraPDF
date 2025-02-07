@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify, render_template, current_app
 import os
 from werkzeug.utils import secure_filename
 import logging
-from services.pdf_image_extractor import extract_images_from_pdf
+from .services.pdf_image_extractor import extract_images_from_pdf
+
 
 main = Blueprint('main', __name__)
 
@@ -67,14 +68,23 @@ def process_pdf_endpoint():
         logging.info("Received a request to process the uploaded PDF file.")
 
         # Get the uploaded PDF filename
-        pdf_filename = request.form.get('pdf_filename')
-        logging.info(f"PDF filename: {pdf_filename}")
+        data = request.get_json()  # Read JSON payload
+        pdf_filename = data.get('pdf_filename')
+        if not pdf_filename:
+            logging.error("No PDF filename provided.")
+            return jsonify({'error': 'No PDF filename provided.'}), 400
+
+        # Ensure the file exists in the upload folder
+        pdf_path = os.path.join(UPLOAD_FOLDER, pdf_filename)
+        if not os.path.exists(pdf_path):
+            logging.error(f"File not found: {pdf_filename}")
+            return jsonify({'error': f"File '{pdf_filename}' not found on the server."}), 404
 
         # Extract images from the PDF
-        extract_images_from_pdf(pdf_filename)
+        extract_images_from_pdf(pdf_path)
 
         logging.info("PDF processing complete.")
-        return jsonify({'message': 'PDF processing complete'}), 200
+        return jsonify({'message': 'PDF processing complete.'}), 200
 
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
