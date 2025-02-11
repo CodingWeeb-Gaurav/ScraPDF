@@ -19,7 +19,7 @@
     </style>
 </head>
 <body>
-    <h1>Hello User, here you can upload the PDF</h1>
+    <h1>Hello User, here you can upload the PDF File</h1>
     <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
         <input type="file" name="pdf" id="pdf" accept=".pdf" required />
         <button type="submit">Upload</button>
@@ -27,8 +27,13 @@
 
     <div class="message" id="message"></div>
     <div class="error" id="error"></div>
+    
+    <!-- processing button -->
+    <button id="processButton">Process PDF</button>
 
     <script>
+        let uploadedFilename;
+        // upload form submission
         document.getElementById('uploadForm').onsubmit = function(event) {
             event.preventDefault(); // Prevent default form submission
 
@@ -45,13 +50,47 @@
                 } else {
                     document.getElementById('message').innerText = data.message;
                     document.getElementById('error').innerText = '';
+                    uploadedFilename = data.filename; // Extract filename
+                    console.log('Uploaded filename:', uploadedFilename);// Log filename
                 }
             })
             .catch(error => {
                 document.getElementById('error').innerText = 'An error occurred during the upload.';
                 console.error('Error:', error);
+                uploadedFilename = null;
             });
         };
+
+        // process button submission
+        document.getElementById('processButton').onclick = function() {
+            if(!uploadedFilename) {
+                document.getElementById('error').innerText = 'Please upload a PDF first.';
+                return;
+            }
+            const payload = {pdf_filename: uploadedFilename};
+            console.log('Payload:', payload);//debugging
+            fetch('/process-pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({pdf_filename: uploadedFilename})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('error').innerText = data.error;
+                    document.getElementById('message').innerText = '';
+                } else {
+                    document.getElementById('message').innerText = data.message;
+                    document.getElementById('error').innerText = '';
+                }
+            })
+            .catch(error => {
+                document.getElementById('error').innerText = 'An error occurred during the processing.';
+                console.error('Error:', error);
+            });
+        }
     </script>
 </body>
 </html>

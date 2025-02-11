@@ -1,5 +1,3 @@
-#ye first page ke aage se diagram extraction start karega, supposing first page introduction hai
-print("code execution starts")
 import cv2
 import numpy as np
 import os
@@ -7,7 +5,6 @@ from pdf2image import convert_from_path
 from fpdf import FPDF
 import pytesseract
 import shutil
-print("code execution starts")
 # Preprocessing function
 def preprocess(img):
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -133,20 +130,6 @@ def process_image(img, rois, page_number, output_path):
     cv2.imwrite(output_path, img)
     print(f"Processed image saved: {output_path}")
 
-# Convert images to a PDF document
-# def images_to_pdf(image_folder, output_pdf_path):
-#     pdf = FPDF()
-#     for filename in sorted(os.listdir(image_folder)):
-#         if filename.endswith('.png'):
-#             image_path = os.path.join(image_folder, filename)
-#             img = cv2.imread(image_path)
-#             height, width, _ = img.shape
-#             pdf.add_page()
-#             # Scale the image to fit within the PDF page size (assuming A4, 210mm x 297mm)
-#             pdf.image(image_path, 0, 0, 210, 297)
-#     pdf.output(output_pdf_path)
-#     print(f"PDF created: {output_pdf_path}")
-
 def clear_folders(*folders):
     for folder in folders:
         # Check if the folder exists
@@ -172,16 +155,39 @@ def clear_folders(*folders):
 
 # Main execution , function bana ke dusri jagah call krna hai
 def extract_images_from_pdf(pdf_filename):
+
+    print(f"Processing PDF: {pdf_filename}")
+
     # Paths
     base_dir = os.path.dirname(os.path.abspath(__file__))  # Get the absolute path of the current script
-    uploads_dir = os.path.join(base_dir, '..', '..', 'uploads')  # Go two levels up from backend to access uploads
-    pdf_path = os.path.join(uploads_dir, pdf_filename)  # The uploaded PDF file path
+    print(f"Base directory: {base_dir}")
 
-    output_clean_folder = os.makedirs(os.path.join(base_dir, 'cleaned_pages'), exist_ok=True)
-    output_diagram_folder = os.makedirs(os.path.join(base_dir, 'extracted_diagrams'), exist_ok=True)
-    output_folder_50dpi = os.makedirs(os.path.join(base_dir, 'extracted_pages_50dpi'), exist_ok=True)
-    output_folder_300dpi = os.makedirs(os.path.join(base_dir, 'extracted_pages_300dpi'), exist_ok=True)
-    #output_clean_pdf = os.path.join(base_dir, 'cleaned_pages.pdf')
+    uploads_dir = os.path.join(base_dir, '..', '..', '..', 'uploads')  # Go three levels up to access uploads
+    uploads_dir = os.path.abspath(uploads_dir)  # Normalize the path
+    print(f"Uploads directory: {uploads_dir}")
+
+    pdf_path = os.path.join(uploads_dir, pdf_filename)
+    print(f"Full PDF path: {pdf_path}")
+
+    # Check if the file exists
+    if not os.path.exists(pdf_path):
+        print("⚠️ Error: PDF file not found at:", pdf_path)
+    else:
+        print("✅ PDF file found:", pdf_path)
+    # The uploaded PDF file path
+
+    output_clean_folder = os.path.join(base_dir, 'cleaned_pages')
+    os.makedirs(output_clean_folder, exist_ok=True)
+
+    output_diagram_folder = os.path.join(base_dir, 'extracted_diagrams')
+    os.makedirs(output_diagram_folder, exist_ok=True)
+
+    output_folder_50dpi = os.path.join(base_dir, 'extracted_pages_50dpi')
+    os.makedirs(output_folder_50dpi, exist_ok=True)
+
+    output_folder_300dpi = os.path.join(base_dir, 'extracted_pages_300dpi')
+    os.makedirs(output_folder_300dpi, exist_ok=True)
+    # #output_clean_pdf = os.path.join(base_dir, 'cleaned_pages.pdf')
 
     # Clear existing folders
     clear_folders(output_folder_50dpi, output_folder_300dpi, output_diagram_folder, output_clean_folder)
@@ -190,9 +196,9 @@ def extract_images_from_pdf(pdf_filename):
     images_50dpi = convert_from_path(pdf_path, dpi=50)
     images_300dpi = convert_from_path(pdf_path, dpi=300)
 
-    # Process each page starting from page 2
+    # Process each page starting from page 1
     for i, (img_50dpi, img_300dpi) in enumerate(zip(images_50dpi[1:], images_300dpi[1:])):  # Skipping first page
-        page_number = i + 2  # Since we skipped the first page, add 2 to align with the actual page number
+        page_number = i + 1  # Since we skipped the first page, add 2 to align with the actual page number
 
         img_50dpi = np.array(img_50dpi)
         img_300dpi = np.array(img_300dpi)
@@ -202,9 +208,23 @@ def extract_images_from_pdf(pdf_filename):
 
         # Scale ROIs to match 300 DPI
         scale_factor = 6  # 300 DPI / 50 DPI = 6
-        rois_300dpi = [(x*scale_factor, y*scale_factor, w*scale_factor, h*scale_factor) for x, y, w, h in rois_50dpi]
-        
+        img_height, img_width = img_300dpi.shape[:2]  # Get image dimensions
+
+        # Ensure ROIs do not go beyond image boundaries
+        rois_300dpi = [
+            (max(0, x * scale_factor), 
+            max(0, y * scale_factor), 
+            min(img_width, (x + w) * scale_factor), 
+            min(img_height, (y + h) * scale_factor)) 
+            for x, y, w, h in rois_50dpi
+        ]
+
         # Save extracted diagrams
+        # Ensure all values are not None
+        if img_300dpi is None or rois_300dpi is None or output_diagram_folder is None or page_number is None:
+            print("⚠️ Error: One or more arguments passed to save_extracted_diagrams() are None!")
+        else:
+            save_extracted_diagrams(img_300dpi, rois_300dpi, output_diagram_folder, page_number)
         save_extracted_diagrams(img_300dpi, rois_300dpi, output_diagram_folder, page_number)
 
         # Process image and save it
@@ -212,5 +232,4 @@ def extract_images_from_pdf(pdf_filename):
         processed_output_path = os.path.join(output_clean_folder, f'page_{formatted_page_number}.png')
         process_image(img_300dpi, rois_300dpi, page_number, processed_output_path)
     print("All images processed, and diagrams saved")    
-    #print(f"All images processed, diagrams saved, and PDF saved as: {output_clean_pdf}")
-print("hello world")
+    # print(f"All images processed, diagrams saved, and PDF saved as: {output_clean_pdf}")

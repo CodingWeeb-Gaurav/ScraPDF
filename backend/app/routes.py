@@ -1,14 +1,16 @@
-from flask import Blueprint, request, jsonify, render_template, current_app
+from flask import Flask, Blueprint, request, jsonify, render_template
+from flask_cors import CORS
 import os
-from werkzeug.utils import secure_filename
 import logging
+from werkzeug.utils import secure_filename
 from .services.pdf_image_extractor import extract_images_from_pdf
 
-
+app=Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 main = Blueprint('main', __name__)
 
-# Define the upload folder
-UPLOAD_FOLDER = '../uploads'
+
+UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../uploads'))
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the folder exists
 
 @main.route('/', methods=['GET'])
@@ -35,53 +37,48 @@ def upload_pdf():
             logging.error("Invalid file type. Only PDF files are allowed.")
             return jsonify({'error': 'Only PDF files are allowed'}), 400
 
-        # Check for file size
-        #max_size = current_app.config.get('MAX_CONTENT_LENGTH', 12 * 1024 * 1024)  # Default to 12 MB
-
-        # if request.content_length is None:
-        #     logging.error("Content length is missing. Unable to determine file size.")
-        #     return jsonify({'error': 'Unable to determine file size. Please try again with a different file or browser.'}), 400
-        
-        # logging.info(f"Content Length: {request.content_length}")
-
-        # if request.content_length > max_size:
-        #     logging.error(f"File is too large: {request.content_length} bytes.")
-        #     return jsonify({'error': 'File is too large. Maximum allowable size is 12 MB'}), 400
-
-        # Save the file securely
         filename = secure_filename(file.filename)
         save_path = os.path.join(UPLOAD_FOLDER, filename)
-        logging.info(f"Saving file to: {save_path}")
-        
+        logging.info(f"Saving file to: {os.path.abspath(save_path)}")        
         file.save(save_path)
 
         logging.info(f"File '{filename}' uploaded successfully.")
-        return jsonify({'message': f"PDF '{filename}' uploaded successfully"}), 200
+        return jsonify({'message': f"PDF '{filename}' uploaded successfully", 'filename': filename}), 200
 
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
         return jsonify({'error': str(e)}), 500
-    
+
 @main.route('/process-pdf', methods=['POST'])
 def process_pdf_endpoint():
+    if request.method == 'OPTIONS':
+        response = jsonify({'message': 'Preflight request successful'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        return response
     try:
         logging.info("Received a request to process the uploaded PDF file.")
 
-        # Get the uploaded PDF filename
-        data = request.get_json()  # Read JSON payload
+        data = request.get_json()
+        logging.info(f"Received data: {data}")
+
         pdf_filename = data.get('pdf_filename')
+        logging.info(f"PDF filename: {pdf_filename}")
+
         if not pdf_filename:
             logging.error("No PDF filename provided.")
             return jsonify({'error': 'No PDF filename provided.'}), 400
 
-        # Ensure the file exists in the upload folder
         pdf_path = os.path.join(UPLOAD_FOLDER, pdf_filename)
+        logging.info(f"Resolved PDF path: {os.path.abspath(pdf_path)}")
+
         if not os.path.exists(pdf_path):
             logging.error(f"File not found: {pdf_filename}")
             return jsonify({'error': f"File '{pdf_filename}' not found on the server."}), 404
-
-        # Extract images from the PDF
-        extract_images_from_pdf(pdf_path)
+        # print("pdf_path",pdf_path)
+        print(f"Uploaded file: {pdf_filename}")
+        extract_images_from_pdf(pdf_filename)
 
         logging.info("PDF processing complete.")
         return jsonify({'message': 'PDF processing complete.'}), 200
