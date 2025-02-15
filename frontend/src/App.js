@@ -3,11 +3,13 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import FileUpload from "./components/FileUpload";
+import Description from "./components/Description";
 
 const App = () => {
     return (
         <div>
             <Header />
+            <Description />
             <main className="container my-4">
                 <h2 className="text-center">Upload Your PDF</h2>
                 <FileUpload />

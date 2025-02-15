@@ -1,0 +1,18 @@
+.description-container {
+    background: linear-gradient(135deg, #3773cc, #c3cfe2);
+    border: 1px solid #d55151;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.description-container h2 {
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    color: #333;
+}
+
+.description-container p {
+    font-family: 'Arial', sans-serif;
+    color: #aa0a0a;
+    line-height: 1.8;
+}

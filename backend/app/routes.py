@@ -37,7 +37,7 @@ def upload_pdf():
             logging.error("Invalid file type. Only PDF files are allowed.")
             return jsonify({'error': 'Only PDF files are allowed'}), 400
 
-        filename = secure_filename(file.filename)
+        filename = secure_filename(file.filename).replace(" ", "_")
         save_path = os.path.join(UPLOAD_FOLDER, filename)
         logging.info(f"Saving file to: {os.path.abspath(save_path)}")        
         file.save(save_path)
@@ -63,7 +63,7 @@ def process_pdf_endpoint():
         data = request.get_json()
         logging.info(f"Received data: {data}")
 
-        pdf_filename = data.get('pdf_filename')
+        pdf_filename = data.get('pdf_filename').replace(" ", "_")
         logging.info(f"PDF filename: {pdf_filename}")
 
         if not pdf_filename:
@@ -76,12 +76,26 @@ def process_pdf_endpoint():
         if not os.path.exists(pdf_path):
             logging.error(f"File not found: {pdf_filename}")
             return jsonify({'error': f"File '{pdf_filename}' not found on the server."}), 404
+        
         # print("pdf_path",pdf_path)
         print(f"Uploaded file: {pdf_filename}")
-        extract_images_from_pdf(pdf_filename)
+        # extract_images_from_pdf(pdf_filename)
 
-        logging.info("PDF processing complete.")
-        return jsonify({'message': 'PDF processing complete.'}), 200
+         # Process the PDF and extract images
+        image_filenames = extract_images_from_pdf(pdf_filename)  # Ensure this function returns a list of filenames
+
+        # Base URL for accessing images
+        base_url = request.host_url.rstrip('/') + '/static/extracted_diagrams/'
+
+        # Construct full image URLs
+        image_urls = [f"{base_url}{filename}" for filename in image_filenames]
+
+        logging.info("PDF processing successful.")
+        return jsonify({
+            'message': 'Processing successful!',
+            'images': image_urls
+        }), 200
+
 
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")

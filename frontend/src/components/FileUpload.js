@@ -2,14 +2,15 @@ import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
 import { Form, Button, Spinner, Container, Alert } from 'react-bootstrap';
-
+import ExtractedImages from './ExtractedImages';
 const FileUpload = () => {
     const [file, setFile] = useState(null); // Stores the selected or dropped file
     const [fileUrl, setFileUrl] = useState(""); // Stores the PDF URL entered by the user
     const [message, setMessage] = useState(""); // Stores messages about success/errors
     const [loading, setLoading] = useState(false); // Uploading state
     const [processing, setProcessing] = useState(false); // Processing state
-
+    const [extractedImages, setExtractedImages] = useState([]); // Extracted images from the PDF
+    const apiUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:5000";
     // Handle file drop
     const onDrop = useCallback((acceptedFiles) => {
         const selectedFile = acceptedFiles[0];
@@ -80,8 +81,11 @@ const FileUpload = () => {
 
         setProcessing(true);
         try {
-            const apiUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:5000";
-            const res = await axios.post(`${apiUrl}/process-pdf`, { pdf_filename: file.name });
+            const sanitizedFileName = file.name.replace(/\s+/g, "_");
+            const res = await axios.post(`${apiUrl}/process-pdf`, { pdf_filename: sanitizedFileName });
+            if(res.data.images) {
+                setExtractedImages(res.data.images); //backend returns a list of image URLs
+            }
             setMessage(res.data.message || "Processing successful!");
         } catch (err) {
             setMessage(err.response?.data?.error || "An error occurred while processing.");
@@ -150,6 +154,8 @@ const FileUpload = () => {
 
             {/* Message */}
             {message && <Alert className="mt-3" variant={message.includes("success") ? "success" : "danger"}>{message}</Alert>}
+
+            <ExtractedImages images={extractedImages} />
         </Container>
     );
 };
