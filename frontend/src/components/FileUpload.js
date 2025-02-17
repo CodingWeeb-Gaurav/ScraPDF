@@ -114,9 +114,9 @@ const FileUpload = () => {
                 )}
 
                 {/* File Selection inside the dropbox */}
-                <Form.Group controlId="formFile" className="mb-3">
+                {/* <Form.Group controlId="formFile" className="mb-3">
                     <Form.Control type="file" accept="application/pdf" onChange={handleFileChange} disabled={loading || processing} />
-                </Form.Group>
+                </Form.Group> */}
             </div>
 
             {/* URL Upload Section */}

@@ -1,31 +1,34 @@
-import React from "react";
-import { Navbar, Nav, Container } from "react-bootstrap";
+import React, { useContext } from "react";
+import { Navbar, Nav, Container, Button } from "react-bootstrap";
+import { ThemeContext } from "../context/ThemeContext"; // Import ThemeContext
 
 const Header = () => {
-  return (
-    <Navbar bg="dark" variant="dark" expand="lg">
-      <Container>
-        <Navbar.Brand href="/">
-            <img
-            src="/ScraPDF logo.png"  // Path relative to 'public/' directory
-            alt="ScraPDF Logo"
-            height="40"  // Adjust as needed
-            style={{ maxWidth: '150px', objectFit: 'contain' }}  // Adjust width
-          />
-            
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto">
-            <Nav.Link href="/">Home</Nav.Link>
-            <Nav.Link href="/about">About</Nav.Link>
-            <Nav.Link href="/contact">Contact</Nav.Link>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
-  );
+    const { theme, toggleTheme } = useContext(ThemeContext); // Access theme and toggleTheme
+
+    return (
+        <Navbar bg={theme === "light" ? "light" : "dark"} variant={theme === "light" ? "light" : "dark"} expand="lg">
+            <Container>
+                <Navbar.Brand href="/">
+                    <img
+                        align="Center"
+                        src="/ScraPDF logo.png" // Path relative to 'public/' directory
+                        alt="ScraPDF Logo"
+                        height="40" // Adjust as needed
+                        style={{ maxWidth: "150px", objectFit: "contain" }} // Adjust width
+                    />
+                </Navbar.Brand>
+                {/* Toggle theme button */}
+                <Nav className="ml-auto">
+                    <Button
+                        variant={theme === "light" ? "outline-dark" : "outline-light"}
+                        onClick={toggleTheme}
+                    >
+                        {theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode"}
+                    </Button>
+                </Nav>
+            </Container>
+        </Navbar>
+    );
 };
 
 export default Header;
-// Compare this snippet from frontend/src/components/Footer.js:
