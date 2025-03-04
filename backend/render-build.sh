@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-# Ensure the system package lists are updated
+# Update and install dependencies
 apt-get update
+apt-get install -y \
+    tesseract-ocr \
+    libtesseract-dev \
+    tesseract-ocr-eng \  # Add required languages
+    poppler-utils  # Required for pdf2image
 
-# Install Tesseract OCR
-apt-get install -y tesseract-ocr
-
-# Install all Python dependencies
 pip install -r requirements.txt
