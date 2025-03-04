@@ -5,10 +5,8 @@ flask
 flask-cors
 gunicorn
 requests
-boto3
 python-dotenv
 boto3==1.35.57
-tesseract
 pytesseract==0.3.13
 Pillow==11.0.0
 requests==2.32.3
