@@ -4,7 +4,7 @@ import os
 from pdf2image import convert_from_path
 import pytesseract
 import shutil
-
+# pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
 # Preprocessing function
 def preprocess(img):
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
