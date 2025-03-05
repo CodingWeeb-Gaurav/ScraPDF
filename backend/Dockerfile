@@ -1,20 +1,26 @@
-# Use an official Python image
+# Use a lightweight base image with Python
 FROM python:3.11
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y tesseract-ocr && apt-get clean
-
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy all backend files to the container
-COPY . .
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    poppler-utils \
+    tesseract-ocr \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the requirements file
+COPY backend/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose Flask's default port
+# Copy the entire backend code
+COPY backend .
+
+# Expose the port Flask runs on
 EXPOSE 8001
 
-# Run the Flask app
+# Start the Flask application
 CMD ["gunicorn", "-b", "0.0.0.0:8001", "run:app"]
