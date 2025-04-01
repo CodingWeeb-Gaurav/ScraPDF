@@ -10,7 +10,7 @@ const FileUpload = () => {
     const [loading, setLoading] = useState(false); // Uploading state
     const [processing, setProcessing] = useState(false); // Processing state
     const [extractedImages, setExtractedImages] = useState([]); // Extracted images from the PDF
-    const apiUrl = process.env.REACT_APP_API_URL";
+    const apiUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:5000";
     // Handle file drop
     const onDrop = useCallback((acceptedFiles) => {
         const selectedFile = acceptedFiles[0];
